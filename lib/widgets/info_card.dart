@@ -1,25 +1,15 @@
 import 'package:flutter/material.dart';
+import 'package:kan_absen/templates/colour_template.dart';
+import 'package:kan_absen/widgets/card_menu_widget.dart';
 
 class InfoCard extends StatelessWidget {
   const InfoCard({ Key? key }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(20),
-      margin: const EdgeInsets.symmetric(vertical: 16, horizontal: 32),
-      decoration: BoxDecoration(
-        color: const Color.fromRGBO(60, 177, 243, 1),
-        borderRadius: const BorderRadius.all(Radius.circular(12)),
-        boxShadow: [
-          BoxShadow(
-            blurRadius: 2,
-            color: Colors.black.withOpacity(.25),
-            offset: const Offset(2, 4),
-            spreadRadius: 1
-          )
-        ]
-      ),
+    return CardMenuWidget(
+      startColour: ColourTemplate.skyColour,
+      endColour: ColourTemplate.skyColour.withOpacity(.8),
       child: Row(
         children: [
           Expanded(

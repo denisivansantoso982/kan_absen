@@ -2,7 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:kan_absen/colors/colour_template.dart';
+import 'package:kan_absen/templates/colour_template.dart';
 import 'package:kan_absen/screen/login.dart';
 
 class Splash extends StatelessWidget {

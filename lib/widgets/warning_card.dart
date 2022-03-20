@@ -1,34 +1,25 @@
 import 'package:flutter/material.dart';
+import 'package:kan_absen/templates/colour_template.dart';
+import 'package:kan_absen/templates/text_style_template.dart';
+import 'package:kan_absen/widgets/card_menu_widget.dart';
 
 class WarningCard extends StatelessWidget {
   const WarningCard({ Key? key }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(20),
-      margin: const EdgeInsets.symmetric(vertical: 16, horizontal: 32),
-      decoration: BoxDecoration(
-        color: const Color.fromRGBO(233, 197, 7, 1),
-        borderRadius: const BorderRadius.all(Radius.circular(12)),
-        boxShadow: [
-          BoxShadow(
-            blurRadius: 2,
-            color: Colors.black.withOpacity(.25),
-            offset: const Offset(2, 4),
-            spreadRadius: 1
-          )
-        ]
-      ),
+    return CardMenuWidget(
+      startColour: ColourTemplate.orangeColour,
+      endColour: ColourTemplate.orangeColour.withOpacity(.8),
       child: Row(
         children: [
           Expanded(
             flex: 1,
             child: Container(
-              alignment: Alignment.topCenter,
+              alignment: Alignment.center,
               child: const Icon(
                 Icons.warning_amber_rounded,
-                color: Color.fromRGBO(51, 51, 51, 1),
+                color: ColourTemplate.grayColour,
                 size: 64,
               ),
             )
@@ -39,25 +30,16 @@ class WarningCard extends StatelessWidget {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.spaceAround,
               crossAxisAlignment: CrossAxisAlignment.start,
-              children: const [
+              children: [
                 Text(
                   "Perhatian!",
-                  style: TextStyle(
-                    color: Color.fromRGBO(51, 51, 51, 1),
-                    fontWeight: FontWeight.bold,
-                    fontSize: 18
-                  ),
+                  style: TextStyleTemplate.boldGray(size: 18),
                 ),
-                SizedBox(height: 8,),
                 Text(
                   "Anda belum absen hari ini! Harap absen tepat waktu!",
-                  style: TextStyle(
-                    color: Color.fromRGBO(51, 51, 51, 1),
-                    fontWeight: FontWeight.w500,
-                    fontSize: 14
-                  ),
+                  style: TextStyleTemplate.mediumGray(size: 14),
                 ),
-                SizedBox(height: 20,),
+                const SizedBox(height: 20,),
               ],
             )
           ),

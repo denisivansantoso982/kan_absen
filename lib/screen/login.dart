@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:kan_absen/colors/colour_template.dart';
+import 'package:kan_absen/templates/colour_template.dart';
 import 'package:kan_absen/screen/home.dart';
 
 class Login extends StatelessWidget {
