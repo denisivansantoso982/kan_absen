@@ -1,15 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:kan_absen/screen/profile_screen.dart';
 import 'package:kan_absen/templates/colour_template.dart';
-import 'package:kan_absen/screen/scan_qr.dart';
+import 'package:kan_absen/screen/scan_qr_screen.dart';
 import 'package:kan_absen/widgets/appbar_widget.dart';
 import 'package:kan_absen/widgets/go_home_card.dart';
 import 'package:kan_absen/widgets/info_card.dart';
 import 'package:kan_absen/widgets/present_card.dart';
 import 'package:kan_absen/widgets/warning_card.dart';
 
-class Home extends StatelessWidget {
-  const Home({Key? key}) : super(key: key);
+class HomeScreen extends StatelessWidget {
+  const HomeScreen({Key? key}) : super(key: key);
 
   static const route = "/home_screen";
   static final DateTime today = DateTime.now();
@@ -63,7 +64,7 @@ class Home extends StatelessWidget {
                 child: Container(
                   alignment: Alignment.centerRight,
                   child: GestureDetector(
-                    onTap: () {},
+                    onTap: () => Navigator.of(context).pushNamed(ProfileScreen.route),
                     child: const SizedBox(
                       width: 45,
                       height: 45,
@@ -103,7 +104,7 @@ class Home extends StatelessWidget {
                   color: Colors.transparent,
                   child: InkWell(
                     onTap: () {
-                      Navigator.of(context).pushNamed(ScanQR.route);
+                      Navigator.of(context).pushNamed(ScanQRScreen.route);
                     },
                     splashColor: Colors.black.withOpacity(.1),
                     highlightColor: Colors.black.withOpacity(.1),
