@@ -1,8 +1,14 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:kan_absen/firebase/auth.dart';
+import 'package:kan_absen/firebase/database.dart';
+import 'package:kan_absen/screen/login_screen.dart';
 import 'package:kan_absen/screen/profile_screen.dart';
+import 'package:kan_absen/templates/alert_dialog_template.dart';
 import 'package:kan_absen/templates/colour_template.dart';
 import 'package:kan_absen/screen/scan_qr_screen.dart';
+import 'package:kan_absen/templates/text_style_template.dart';
 import 'package:kan_absen/widgets/appbar_widget.dart';
 import 'package:kan_absen/widgets/go_home_card.dart';
 import 'package:kan_absen/widgets/info_card.dart';
@@ -15,8 +21,36 @@ class HomeScreen extends StatelessWidget {
   static const route = "/home_screen";
   static final DateTime today = DateTime.now();
 
+  void _doLoadProfile(BuildContext context) async {
+    try {
+      User? user = await getCurrentUser();
+      if (user != null) {
+        getUserByEmail(user.email, context);
+      } else {
+        Navigator.of(context).pushReplacementNamed(LoginScreen.route);
+      }
+    } catch (error) {
+      AlertDialogTemplate().showTheDialog(
+        context: context,
+        title: "Terjadi Kesalahan!",
+        content: error.toString(),
+        actions: [
+          MaterialButton(
+            onPressed: () => Navigator.of(context).pop(),
+            color: ColourTemplate.primaryColour,
+            child: Text(
+              "OKE",
+              style: TextStyleTemplate.boldWhite(size: 18),
+            ),
+          ),
+        ],
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
+    _doLoadProfile(context);
     return Scaffold(
       backgroundColor: ColourTemplate.whiteColour,
       appBar: PreferredSize(
@@ -64,14 +98,16 @@ class HomeScreen extends StatelessWidget {
                 child: Container(
                   alignment: Alignment.centerRight,
                   child: GestureDetector(
-                    onTap: () => Navigator.of(context).pushNamed(ProfileScreen.route),
+                    onTap: () =>
+                        Navigator.of(context).pushNamed(ProfileScreen.route),
                     child: const SizedBox(
                       width: 45,
                       height: 45,
                       child: ClipRRect(
                         borderRadius: BorderRadius.all(Radius.circular(48)),
                         child: Image(
-                          image: AssetImage("assets/images/IMG-20190903-WA0008.jpeg"),
+                          image: AssetImage(
+                              "assets/images/IMG-20190903-WA0008.jpeg"),
                           width: 45,
                           height: 45,
                           fit: BoxFit.cover,
@@ -95,7 +131,8 @@ class HomeScreen extends StatelessWidget {
               const PresentCard(),
               const InfoCard(),
               Container(
-                margin: const EdgeInsets.symmetric(vertical: 16, horizontal: 32),
+                margin:
+                    const EdgeInsets.symmetric(vertical: 16, horizontal: 32),
                 decoration: const BoxDecoration(
                   color: ColourTemplate.primaryColour,
                   borderRadius: BorderRadius.all(Radius.circular(4)),
@@ -110,8 +147,8 @@ class HomeScreen extends StatelessWidget {
                     highlightColor: Colors.black.withOpacity(.1),
                     child: Container(
                       alignment: Alignment.center,
-                      padding:
-                          const EdgeInsets.symmetric(vertical: 10, horizontal: 0),
+                      padding: const EdgeInsets.symmetric(
+                          vertical: 10, horizontal: 0),
                       child: const Text(
                         "Scan Untuk Absen",
                         style: TextStyle(

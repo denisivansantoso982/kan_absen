@@ -1,16 +1,12 @@
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:kan_absen/firebase/auth.dart';
 import 'package:kan_absen/firebase/database.dart';
-import 'package:kan_absen/models/data/users_data.dart';
-import 'package:kan_absen/models/profile_model.dart';
 import 'package:kan_absen/screen/home_screen.dart';
 import 'package:kan_absen/templates/alert_dialog_template.dart';
 import 'package:kan_absen/templates/colour_template.dart';
 import 'package:kan_absen/screen/login_screen.dart';
 import 'package:kan_absen/templates/text_style_template.dart';
-import 'package:provider/provider.dart';
 
 class SplashScreen extends StatelessWidget {
   const SplashScreen({Key? key}) : super(key: key);
@@ -21,20 +17,8 @@ class SplashScreen extends StatelessWidget {
     try {
       User? user = await getCurrentUser();
       if (user != null) {
-        DataSnapshot? dataSnapshot = await getUserByEmail(user.email);
-        if (dataSnapshot != null) {
-          Provider.of<ProfileModel>(context, listen: false).fillProfile(
-            UsersData(
-              uid: dataSnapshot.children.first.key.toString(),
-              name: dataSnapshot.children.first.child('name').value.toString(),
-              dateOfBirth: DateTime.fromMillisecondsSinceEpoch(int.parse(dataSnapshot.children.first.child('date_of_birth').value.toString())),
-              sex: dataSnapshot.children.first.child('sex').value.toString(),
-              email: dataSnapshot.children.first.child('email').value.toString(),
-              role: dataSnapshot.children.first.child('level').value.toString(),
-              quotes: dataSnapshot.children.first.child('quotes').value.toString(),
-            ),
-          );
-        } else {
+        bool isUserExist = await checkUserByEmail(user.email);
+        if (!isUserExist) {
           user = null;
         }
       }
