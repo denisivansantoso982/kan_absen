@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:kan_absen/firebase/auth.dart';
 import 'package:kan_absen/firebase/database.dart';
+import 'package:kan_absen/models/data/present_data.dart';
+import 'package:kan_absen/models/present_model.dart';
 import 'package:kan_absen/screen/login_screen.dart';
 import 'package:kan_absen/screen/profile_screen.dart';
 import 'package:kan_absen/templates/alert_dialog_template.dart';
@@ -14,6 +16,7 @@ import 'package:kan_absen/widgets/go_home_card.dart';
 import 'package:kan_absen/widgets/info_card.dart';
 import 'package:kan_absen/widgets/present_card.dart';
 import 'package:kan_absen/widgets/warning_card.dart';
+import 'package:provider/provider.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({Key? key}) : super(key: key);
@@ -25,7 +28,9 @@ class HomeScreen extends StatelessWidget {
     try {
       User? user = await getCurrentUser();
       if (user != null) {
-        getUserByEmail(user.email, context);
+        await getUserByEmail(user.email, context);
+        await Future.delayed(const Duration(seconds: 1));
+        _doLoadDataPresent(context);
       } else {
         Navigator.of(context).pushReplacementNamed(LoginScreen.route);
       }
@@ -46,6 +51,114 @@ class HomeScreen extends StatelessWidget {
         ],
       );
     }
+  }
+
+  void _doLoadDataPresent(BuildContext context) async {
+    try {
+      await getUserPresent(context);
+    } catch (error) {
+      AlertDialogTemplate().showTheDialog(
+        context: context,
+        title: "Terjadi Kesalahan!",
+        content: error.toString(),
+        actions: [
+          MaterialButton(
+            onPressed: () => Navigator.of(context).pop(),
+            color: ColourTemplate.primaryColour,
+            child: Text(
+              "OKE",
+              style: TextStyleTemplate.boldWhite(size: 18),
+            ),
+          ),
+        ],
+      );
+    }
+  }
+
+  void _doProcessBeforeScan(BuildContext context) {
+    DateTime presentTime = DateTime(today.year, today.month, today.day, 8);
+    DateTime homeTime =   DateTime(today.year, today.month, today.day, DateTime.now().weekday != DateTime.saturday ? 17 : 16);
+    PresentData? presentData =
+        Provider.of<PresentModel>(context, listen: false).thePresentData;
+    if (presentData == null) {
+      Navigator.of(context).pushNamed(
+        ScanQRScreen.route,
+        arguments: {
+          'present_time': presentTime,
+          'home_time': homeTime,
+        },
+      );
+    } else if (presentData.home == 0 && DateTime.now().isAfter(homeTime)) {
+      Navigator.of(context).pushNamed(
+        ScanQRScreen.route,
+        arguments: {
+          'present_time': presentTime,
+          'home_time': homeTime,
+        },
+      );
+    } else if (presentData.present != 0 && presentData.home == 0 && DateTime.now().isBefore(homeTime)) {
+      AlertDialogTemplate().showTheDialog(
+        context: context,
+        title: 'Informasi!',
+        content: 'Sudah absen! Tunggu pulang nanti untuk absen!',
+        actions: [
+          MaterialButton(
+            onPressed: () => Navigator.of(context).pop(),
+            color: ColourTemplate.primaryColour,
+            child: Text(
+              "OKE",
+              style: TextStyleTemplate.boldWhite(size: 18),
+            ),
+          ),
+        ],
+      );
+    } else if (presentData.present != 0 && presentData.home != 0 && DateTime.now().isAfter(homeTime)) {
+      AlertDialogTemplate().showTheDialog(
+        context: context,
+        title: 'Informasi!',
+        content: 'Sudah absen! Tunggu hari kerja selanjutnya untuk absen!',
+        actions: [
+          MaterialButton(
+            onPressed: () => Navigator.of(context).pop(),
+            color: ColourTemplate.primaryColour,
+            child: Text(
+              "OKE",
+              style: TextStyleTemplate.boldWhite(size: 18),
+            ),
+          ),
+        ],
+      );
+    }
+  }
+
+  List<Widget> _doGenerateCard(BuildContext context, PresentModel present) {
+    PresentData? presentData =
+        Provider.of<PresentModel>(context, listen: false).thePresentData;
+    if (present.thePresentData != null) {
+      if (present.thePresentData!.present == 0) {
+        return <Widget>[
+          const WarningCard(),
+          const InfoCard(),
+        ];
+      } else if (present.thePresentData!.home == 0) {
+        return <Widget>[
+          PresentCard(presentTime: DateTime.fromMillisecondsSinceEpoch(presentData!.present),),
+          const InfoCard(),
+        ];
+      } else {
+        return <Widget>[
+          GoHomeCard(
+            presentTime: DateTime.fromMillisecondsSinceEpoch(presentData!.present),
+            homeTime: DateTime.fromMillisecondsSinceEpoch(presentData.home),
+          ),
+          const InfoCard(),
+        ];
+      }
+    }
+    return <Widget>[
+      const WarningCard(),
+      const InfoCard(),
+    ];
   }
 
   @override
@@ -121,44 +234,41 @@ class HomeScreen extends StatelessWidget {
           ),
         ),
       ),
-      body: Padding(
+      body: SingleChildScrollView(
         padding: const EdgeInsets.only(top: 8.0, bottom: 4),
-        child: SingleChildScrollView(
-          child: Column(
+        child: Consumer<PresentModel>(
+          builder: (context, present, child) {
+            return Column(
+              children: _doGenerateCard(context, present),
+            );
+          },
+        ),
+      ),
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
+      floatingActionButton: MaterialButton(
+        splashColor: Colors.transparent,
+        highlightColor: Colors.transparent,
+        onPressed: () => _doProcessBeforeScan(context),
+        child: Container(
+          padding: const EdgeInsets.symmetric(
+            horizontal: 16,
+            vertical: 8,
+          ),
+          decoration: const BoxDecoration(
+              color: ColourTemplate.primaryColour,
+              borderRadius: BorderRadius.all(Radius.circular(8))),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
             children: [
-              const WarningCard(),
-              const GoHomeCard(),
-              const PresentCard(),
-              const InfoCard(),
-              Container(
-                margin:
-                    const EdgeInsets.symmetric(vertical: 16, horizontal: 32),
-                decoration: const BoxDecoration(
-                  color: ColourTemplate.primaryColour,
-                  borderRadius: BorderRadius.all(Radius.circular(4)),
-                ),
-                child: Material(
-                  color: Colors.transparent,
-                  child: InkWell(
-                    onTap: () {
-                      Navigator.of(context).pushNamed(ScanQRScreen.route);
-                    },
-                    splashColor: Colors.black.withOpacity(.1),
-                    highlightColor: Colors.black.withOpacity(.1),
-                    child: Container(
-                      alignment: Alignment.center,
-                      padding: const EdgeInsets.symmetric(
-                          vertical: 10, horizontal: 0),
-                      child: const Text(
-                        "Scan Untuk Absen",
-                        style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 20,
-                            fontWeight: FontWeight.bold),
-                      ),
-                    ),
-                  ),
-                ),
+              const Icon(
+                Icons.qr_code_scanner_outlined,
+                color: Colors.white,
+                size: 28,
+              ),
+              const SizedBox(width: 8),
+              Text(
+                "Scan",
+                style: TextStyleTemplate.boldWhite(size: 20),
               ),
             ],
           ),

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:kan_absen/models/present_model.dart';
 import 'package:kan_absen/models/profile_model.dart';
 import 'package:kan_absen/screen/profile_screen.dart';
 import 'package:kan_absen/templates/colour_template.dart';
@@ -26,8 +27,9 @@ class MyApp extends StatelessWidget {
     return MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (context) => ProfileModel()),
+        ChangeNotifierProvider(create: (context) => PresentModel()),
       ],
-      builder: (context, child) => MaterialApp(
+      child: MaterialApp(
         debugShowCheckedModeBanner: false,
         title: 'KanAbsen',
         theme: ThemeData(

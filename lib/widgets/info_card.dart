@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:kan_absen/templates/colour_template.dart';
+import 'package:kan_absen/templates/text_style_template.dart';
 import 'package:kan_absen/widgets/card_menu_widget.dart';
 
 class InfoCard extends StatelessWidget {
@@ -15,7 +16,7 @@ class InfoCard extends StatelessWidget {
           Expanded(
             flex: 1,
             child: Container(
-              alignment: Alignment.topCenter,
+              alignment: Alignment.center,
               child: const Icon(
                 Icons.info_outline_rounded,
                 color: Color.fromRGBO(51, 51, 51, 1),
@@ -29,25 +30,16 @@ class InfoCard extends StatelessWidget {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.spaceAround,
               crossAxisAlignment: CrossAxisAlignment.start,
-              children: const [
+              children: [
                 Text(
                   "Info!",
-                  style: TextStyle(
-                    color: Color.fromRGBO(51, 51, 51, 1),
-                    fontWeight: FontWeight.bold,
-                    fontSize: 18
-                  ),
+                  style: TextStyleTemplate.boldGray(size: 18),
                 ),
-                SizedBox(height: 8,),
                 Text(
                   "Masuk jam 8.00 \nPulang Jam 17.00",
-                  style: TextStyle(
-                    color: Color.fromRGBO(51, 51, 51, 1),
-                    fontWeight: FontWeight.w500,
-                    fontSize: 14
-                  ),
+                  style: TextStyleTemplate.mediumGray(size: 14),
                 ),
-                SizedBox(height: 20,),
+                const SizedBox(height: 20,),
               ],
             )
           ),

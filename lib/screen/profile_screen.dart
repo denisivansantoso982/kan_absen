@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:kan_absen/firebase/auth.dart';
+import 'package:kan_absen/models/present_model.dart';
 import 'package:kan_absen/models/profile_model.dart';
 import 'package:kan_absen/screen/login_screen.dart';
 import 'package:kan_absen/templates/colour_template.dart';
@@ -16,6 +17,7 @@ class ProfileScreen extends StatelessWidget {
   void _doLogout(BuildContext context) async {
     await signOut();
     Provider.of<ProfileModel>(context, listen: false).removeAllProfile();
+    Provider.of<PresentModel>(context, listen: false).removePresent();
     bool isStored = Provider.of<ProfileModel>(context, listen: false)
               .theProfile == null
       ? false

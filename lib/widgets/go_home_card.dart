@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:kan_absen/templates/colour_template.dart';
 import 'package:kan_absen/templates/text_style_template.dart';
 import 'package:kan_absen/widgets/card_menu_widget.dart';
 
 class GoHomeCard extends StatelessWidget {
-  const GoHomeCard({ Key? key }) : super(key: key);
+  const GoHomeCard({ Key? key, required this.presentTime, required this.homeTime }) : super(key: key);
+  final DateTime presentTime;
+  final DateTime homeTime;
 
   @override
   Widget build(BuildContext context) {
@@ -29,7 +32,7 @@ class GoHomeCard extends StatelessWidget {
                   ),
                 ),
                 Text(
-                  "8:00",
+                  DateFormat('HH:mm').format(presentTime),
                   style: TextStyleTemplate.mediumGray(size: 12),
                 ),
               ],
@@ -56,7 +59,7 @@ class GoHomeCard extends StatelessWidget {
                   alignment: Alignment.centerRight,
                   margin: const EdgeInsets.only(right: 8),
                   child: Text(
-                    "17:00",
+                    DateFormat('HH:mm').format(homeTime),
                     style: TextStyleTemplate.mediumGray(size: 12),
                   ),
                 ),
