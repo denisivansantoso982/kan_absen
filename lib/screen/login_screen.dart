@@ -30,8 +30,11 @@ class LoginScreen extends StatelessWidget {
           await signOut();
           throw Exception('Pengguna tidak ditemukan');
         }
+      } else {
+        Navigator.of(context).pop();
       }
     } catch (error) {
+      Navigator.of(context).pop();
       AlertDialogTemplate().showTheDialog(
         context: context,
         title: "Terjadi Kesalahan!",
