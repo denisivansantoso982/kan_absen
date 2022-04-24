@@ -1,5 +1,7 @@
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:kan_absen/models/agenda_model.dart';
+import 'package:kan_absen/models/data/agenda_data.dart';
 import 'package:kan_absen/models/data/present_data.dart';
 import 'package:kan_absen/models/data/users_data.dart';
 import 'package:kan_absen/models/present_model.dart';
@@ -8,6 +10,7 @@ import 'package:provider/provider.dart';
 
 DatabaseReference usersReference = FirebaseDatabase.instance.ref('users');
 DatabaseReference presentReference = FirebaseDatabase.instance.ref('present');
+DatabaseReference agendaReference = FirebaseDatabase.instance.ref('agenda');
 
 Future<void> getUserByEmail(String? email, BuildContext context) async {
   usersReference.orderByChild('email').equalTo(email).onValue.listen((event) {
@@ -36,8 +39,18 @@ Future<void> getUserPresent(BuildContext context) async {
   String usersUid =
       Provider.of<ProfileModel>(context, listen: false).theProfile!.uid;
   DateTime today = DateTime.now();
-  int todayTimeStamp = DateTime(today.year, today.month, today.day, 0, 0, 0).millisecondsSinceEpoch;
-  presentReference.orderByChild('present_time').endAt(todayTimeStamp, key: 'present_time').onValue.listen((event) {
+  int todayStartTimeStamp =
+      DateTime(today.year, today.month, today.day, 0, 0, 0)
+          .millisecondsSinceEpoch;
+  int todayEndTimeStamp =
+      DateTime(today.year, today.month, today.day, 23, 59, 59)
+          .millisecondsSinceEpoch;
+  presentReference
+      .orderByChild('present_time')
+      .endAt(todayStartTimeStamp, key: 'present_time')
+      .startAt(todayEndTimeStamp, key: 'present_time')
+      .onValue
+      .listen((event) {
     if (event.snapshot.exists) {
       for (var element in event.snapshot.children) {
         if (element.child('users').value.toString() == usersUid) {
@@ -47,8 +60,8 @@ Future<void> getUserPresent(BuildContext context) async {
               users: element.child('users').value.toString(),
               present: int.parse(element.child('present_at').value.toString()),
               home: element.child('home_at').value != null
-                ? int.parse(element.child('home_at').value.toString())
-                : 0,
+                  ? int.parse(element.child('home_at').value.toString())
+                  : 0,
             ),
           );
           break;
@@ -60,6 +73,31 @@ Future<void> getUserPresent(BuildContext context) async {
   }).onError((error, stackTrace) => Future.error(error, stackTrace));
 }
 
+Future<void> getAgenda(BuildContext context) async {
+  DateTime now = DateTime.now();
+  agendaReference
+      .orderByChild('agenda_end_at')
+      .startAt(now.millisecondsSinceEpoch, key: 'agenda_end_at')
+      .onValue
+      .listen((event) {
+    Provider.of<AgendaModel>(context, listen: false).clearAgenda();
+    if (event.snapshot.exists) {
+      for (var element in event.snapshot.children) {
+        Provider.of<AgendaModel>(context, listen: false).fillAgenda(
+          AgendaData(
+            agenda_uid: element.key!,
+            agenda_name: element.child('agenda_name').value.toString(),
+            agenda_detail: element.child('agenda_detail').value.toString(),
+            agenda_start: DateTime.fromMillisecondsSinceEpoch(element.child('agenda_start_at').value as int),
+            agenda_end: DateTime.fromMillisecondsSinceEpoch(element.child('agenda_end_at').value as int),
+            isActive: element.child('is_active').value as bool,
+          ),
+        );
+      }
+    }
+  });
+}
+
 Future<bool> checkUserByEmail(String? email) async {
   bool isExist = false;
   final DataSnapshot dataSnapshot = await usersReference
@@ -67,7 +105,8 @@ Future<bool> checkUserByEmail(String? email) async {
       .equalTo(email)
       .get()
       .onError((error, stackTrace) => Future.error(error!, stackTrace));
-  if (dataSnapshot.exists) {
+  bool isActive = dataSnapshot.children.first.child('is_active').value as bool;
+  if (dataSnapshot.exists && isActive) {
     isExist = true;
   }
 

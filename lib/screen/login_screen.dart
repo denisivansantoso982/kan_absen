@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:kan_absen/firebase/auth.dart';
 import 'package:kan_absen/firebase/database.dart';
@@ -32,8 +31,6 @@ class LoginScreen extends StatelessWidget {
           throw Exception('Pengguna tidak ditemukan');
         }
       }
-    } on PlatformException catch (error) {
-      print(error);
     } catch (error) {
       AlertDialogTemplate().showTheDialog(
         context: context,

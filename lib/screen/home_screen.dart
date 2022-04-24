@@ -5,12 +5,14 @@ import 'package:kan_absen/firebase/auth.dart';
 import 'package:kan_absen/firebase/database.dart';
 import 'package:kan_absen/models/data/present_data.dart';
 import 'package:kan_absen/models/present_model.dart';
+import 'package:kan_absen/models/profile_model.dart';
 import 'package:kan_absen/screen/login_screen.dart';
 import 'package:kan_absen/screen/profile_screen.dart';
 import 'package:kan_absen/templates/alert_dialog_template.dart';
 import 'package:kan_absen/templates/colour_template.dart';
 import 'package:kan_absen/screen/scan_qr_screen.dart';
 import 'package:kan_absen/templates/text_style_template.dart';
+import 'package:kan_absen/widgets/agenda_card_widget.dart';
 import 'package:kan_absen/widgets/appbar_widget.dart';
 import 'package:kan_absen/widgets/go_home_card.dart';
 import 'package:kan_absen/widgets/info_card.dart';
@@ -75,9 +77,32 @@ class HomeScreen extends StatelessWidget {
     }
   }
 
+  void _doGetAgenda(BuildContext context) async {
+    try {
+      await getAgenda(context);
+    } catch (error) {
+      AlertDialogTemplate().showTheDialog(
+        context: context,
+        title: "Terjadi Kesalahan!",
+        content: error.toString(),
+        actions: [
+          MaterialButton(
+            onPressed: () => Navigator.of(context).pop(),
+            color: ColourTemplate.primaryColour,
+            child: Text(
+              "OKE",
+              style: TextStyleTemplate.boldWhite(size: 18),
+            ),
+          ),
+        ],
+      );
+    }
+  }
+
   void _doProcessBeforeScan(BuildContext context) {
     DateTime presentTime = DateTime(today.year, today.month, today.day, 8);
-    DateTime homeTime =   DateTime(today.year, today.month, today.day, DateTime.now().weekday != DateTime.saturday ? 17 : 16);
+    DateTime homeTime = DateTime(today.year, today.month, today.day,
+        DateTime.now().weekday != DateTime.saturday ? 17 : 16);
     PresentData? presentData =
         Provider.of<PresentModel>(context, listen: false).thePresentData;
     if (presentData == null) {
@@ -96,7 +121,9 @@ class HomeScreen extends StatelessWidget {
           'home_time': homeTime,
         },
       );
-    } else if (presentData.present != 0 && presentData.home == 0 && DateTime.now().isBefore(homeTime)) {
+    } else if (presentData.present != 0 &&
+        presentData.home == 0 &&
+        DateTime.now().isBefore(homeTime)) {
       AlertDialogTemplate().showTheDialog(
         context: context,
         title: 'Informasi!',
@@ -112,7 +139,9 @@ class HomeScreen extends StatelessWidget {
           ),
         ],
       );
-    } else if (presentData.present != 0 && presentData.home != 0 && DateTime.now().isAfter(homeTime)) {
+    } else if (presentData.present != 0 &&
+        presentData.home != 0 &&
+        DateTime.now().isAfter(homeTime)) {
       AlertDialogTemplate().showTheDialog(
         context: context,
         title: 'Informasi!',
@@ -131,39 +160,32 @@ class HomeScreen extends StatelessWidget {
     }
   }
 
-  List<Widget> _doGenerateCard(BuildContext context, PresentModel present) {
+  Widget _doGenerateCard(BuildContext context, PresentModel present) {
     PresentData? presentData =
         Provider.of<PresentModel>(context, listen: false).thePresentData;
     if (present.thePresentData != null) {
       if (present.thePresentData!.present == 0) {
-        return <Widget>[
-          const WarningCard(),
-          const InfoCard(),
-        ];
+        return const WarningCard();
       } else if (present.thePresentData!.home == 0) {
-        return <Widget>[
-          PresentCard(presentTime: DateTime.fromMillisecondsSinceEpoch(presentData!.present),),
-          const InfoCard(),
-        ];
+        return PresentCard(
+          presentTime:
+              DateTime.fromMillisecondsSinceEpoch(presentData!.present),
+        );
       } else {
-        return <Widget>[
-          GoHomeCard(
-            presentTime: DateTime.fromMillisecondsSinceEpoch(presentData!.present),
-            homeTime: DateTime.fromMillisecondsSinceEpoch(presentData.home),
-          ),
-          const InfoCard(),
-        ];
+        return GoHomeCard(
+          presentTime:
+              DateTime.fromMillisecondsSinceEpoch(presentData!.present),
+          homeTime: DateTime.fromMillisecondsSinceEpoch(presentData.home),
+        );
       }
     }
-    return <Widget>[
-      const WarningCard(),
-      const InfoCard(),
-    ];
+    return const WarningCard();
   }
 
   @override
   Widget build(BuildContext context) {
     _doLoadProfile(context);
+    _doGetAgenda(context);
     return Scaffold(
       backgroundColor: ColourTemplate.whiteColour,
       appBar: PreferredSize(
@@ -213,17 +235,24 @@ class HomeScreen extends StatelessWidget {
                   child: GestureDetector(
                     onTap: () =>
                         Navigator.of(context).pushNamed(ProfileScreen.route),
-                    child: const SizedBox(
+                    child: SizedBox(
                       width: 45,
                       height: 45,
                       child: ClipRRect(
-                        borderRadius: BorderRadius.all(Radius.circular(48)),
-                        child: Image(
-                          image: AssetImage(
-                              "assets/images/IMG-20190903-WA0008.jpeg"),
-                          width: 45,
-                          height: 45,
-                          fit: BoxFit.cover,
+                        borderRadius:
+                            const BorderRadius.all(Radius.circular(48)),
+                        child: Container(
+                          color: ColourTemplate.primaryColour,
+                          alignment: Alignment.center,
+                          child: Text(
+                            context.watch<ProfileModel>().theProfile != null
+                                ? context
+                                    .watch<ProfileModel>()
+                                    .theProfile!
+                                    .name[0]
+                                : '',
+                            style: TextStyleTemplate.boldWhite(size: 20),
+                          ),
                         ),
                       ),
                     ),
@@ -236,12 +265,16 @@ class HomeScreen extends StatelessWidget {
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.only(top: 8.0, bottom: 4),
-        child: Consumer<PresentModel>(
-          builder: (context, present, child) {
-            return Column(
-              children: _doGenerateCard(context, present),
-            );
-          },
+        child: Column(
+          children: [
+            Consumer<PresentModel>(
+              builder: (context, present, child) {
+                return _doGenerateCard(context, present);
+              },
+            ),
+            const InfoCard(),
+            const AgendaCardWidget(),
+          ],
         ),
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
