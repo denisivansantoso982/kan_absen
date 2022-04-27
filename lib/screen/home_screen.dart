@@ -106,13 +106,31 @@ class HomeScreen extends StatelessWidget {
     PresentData? presentData =
         Provider.of<PresentModel>(context, listen: false).thePresentData;
     if (presentData == null) {
-      Navigator.of(context).pushNamed(
-        ScanQRScreen.route,
-        arguments: {
-          'present_time': presentTime,
-          'home_time': homeTime,
-        },
+      if (DateTime.now().isAfter(homeTime)){
+        AlertDialogTemplate().showTheDialog(
+        context: context,
+        title: 'Informasi!',
+        content: 'Anda dinyatakan tidak masuk hari ini!',
+        actions: [
+          MaterialButton(
+            onPressed: () => Navigator.of(context).pop(),
+            color: ColourTemplate.primaryColour,
+            child: Text(
+              "OKE",
+              style: TextStyleTemplate.boldWhite(size: 18),
+            ),
+          ),
+        ],
       );
+      } else {
+        Navigator.of(context).pushNamed(
+          ScanQRScreen.route,
+          arguments: {
+            'present_time': presentTime,
+            'home_time': homeTime,
+          },
+        );
+      }
     } else if (presentData.home == 0 && DateTime.now().isAfter(homeTime)) {
       Navigator.of(context).pushNamed(
         ScanQRScreen.route,

@@ -46,9 +46,9 @@ Future<void> getUserPresent(BuildContext context) async {
       DateTime(today.year, today.month, today.day, 23, 59, 59)
           .millisecondsSinceEpoch;
   presentReference
-      .orderByChild('present_time')
-      .endAt(todayStartTimeStamp, key: 'present_time')
-      .startAt(todayEndTimeStamp, key: 'present_time')
+      .orderByChild('present_at')
+      .endAt(todayEndTimeStamp, key: 'present_at')
+      .startAt(todayStartTimeStamp, key: 'present_at')
       .onValue
       .listen((event) {
     if (event.snapshot.exists) {
